@@ -27,7 +27,7 @@ static unsigned loops_per_tick;
 /* Semaphore used to avoid busy waiting.
    Initializes the binary semaphore to an intial value of 1. */
 static struct semaphore sema_thread;
-// sema_init(&sema_thread, 1);
+sema_init(&sema_thread, 1);
 
 
 static intr_handler_func timer_interrupt;
@@ -96,7 +96,7 @@ void
 timer_sleep (int64_t ticks) 
 {
   int64_t start = timer_ticks ();
-  
+
   ASSERT (intr_get_level () == INTR_ON);
   sema_down(&sema_thread);
   while (timer_elapsed (start) < ticks)
