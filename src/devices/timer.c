@@ -27,8 +27,7 @@ static unsigned loops_per_tick;
 /* Semaphore used to avoid busy waiting.
    Initializes the binary semaphore to an intial value of 1. */
 static struct semaphore sema_thread;
-// sema_init(&sema_thread, 1);
-
+static struct thread* curr_thread;
 
 static intr_handler_func timer_interrupt;
 static bool too_many_loops (unsigned loops);
@@ -43,6 +42,7 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+  sema_init(&sema_thread, 1);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -96,11 +96,16 @@ void
 timer_sleep (int64_t ticks) 
 {
   int64_t start = timer_ticks ();
-  
+  char msg[100];
+
   ASSERT (intr_get_level () == INTR_ON);
+  curr_thread = thread_current(); // initializes thread to current thread
+
+  curr_thread->sleep_ticks = ticks;
+  curr_thread->start_tick = start;
+  snprintf(msg, 100, "sleep %s\n", curr_thread->name);
+  puts(msg);
   sema_down(&sema_thread);
-  while (timer_elapsed (start) < ticks)
-    thread_yield ();
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -177,8 +182,22 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  int64_t sleep_ticks;
+  int64_t start;
+  char msg[100];
+
+  curr_thread = thread_current();
+
   ticks++;
   thread_tick ();
+  sleep_ticks = curr_thread->sleep_ticks;
+  start = curr_thread->start_tick;
+
+  if(timer_elapsed(start) >= sleep_ticks && sema_thread.value == 0) {
+    snprintf(msg, 100, "wake up %s\n", curr_thread->name);
+    puts(msg);
+    sema_up(&sema_thread);
+  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
