@@ -7,7 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
-  
+
 /* See [8254] for hardware details of the 8254 timer chip. */
 
 #if TIMER_FREQ < 19
@@ -24,10 +24,7 @@ static int64_t ticks;
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
 
-/* Semaphore used to avoid busy waiting.
-   Initializes the binary semaphore to an intial value of 1. */
-static struct semaphore sema_thread;
-static struct thread* curr_thread;
+static struct list wait_list;
 
 static intr_handler_func timer_interrupt;
 static bool too_many_loops (unsigned loops);
@@ -42,7 +39,8 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
-  sema_init(&sema_thread, 1);
+  list_init(&wait_list);
+  // sema_init(&sema_thread, 0);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -95,17 +93,23 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
-  char msg[100];
+  int64_t start = timer_ticks (); // tick that thread is put to sleep at
+  struct thread* curr_thread;
+  // char msg[100];
 
   ASSERT (intr_get_level () == INTR_ON);
-  curr_thread = thread_current(); // initializes thread to current thread
+  if(ticks <= 0)
+    return;
+  curr_thread = thread_current();
+  sema_init(&curr_thread->sema_thread, 0); // initialize semaphore
 
   curr_thread->sleep_ticks = ticks;
   curr_thread->start_tick = start;
-  snprintf(msg, 100, "sleep %s\n", curr_thread->name);
-  puts(msg);
-  sema_down(&sema_thread);
+
+  // snprintf(msg, 100, "sleep %s\n", curr_thread->name);
+  // puts(msg);
+  list_push_back(&wait_list, &curr_thread->waitelem);
+  sema_down(&curr_thread->sema_thread);
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -184,20 +188,31 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   int64_t sleep_ticks;
   int64_t start;
-  char msg[100];
-
-  curr_thread = thread_current();
+  struct list_elem *e;
+  struct thread* t;
+  // char msg[100];
 
   ticks++;
   thread_tick ();
-  sleep_ticks = curr_thread->sleep_ticks;
-  start = curr_thread->start_tick;
 
-  if(timer_elapsed(start) >= sleep_ticks && sema_thread.value == 0) {
-    snprintf(msg, 100, "wake up %s\n", curr_thread->name);
-    puts(msg);
-    sema_up(&sema_thread);
+  for (e = list_begin (&wait_list); e != list_end (&wait_list); e = list_next (e)) {
+    t = list_entry(e, struct thread, waitelem);
+    sleep_ticks = t->sleep_ticks;
+    start = t->start_tick;
+
+    if(timer_elapsed(start) == sleep_ticks) {
+      list_remove(e);
+      // snprintf(msg, 100, "wake up %s\n", t->name);
+      // puts(msg);
+      sema_up(&t->sema_thread);
+    }
   }
+
+  // if(timer_elapsed(start) >= sleep_ticks && sema_thread.value == 0) {
+  //   snprintf(msg, 100, "wake up %s\n", curr_thread->name);
+  //   puts(msg);
+  //   sema_up(&sema_thread);
+  // }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

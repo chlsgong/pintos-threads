@@ -222,6 +222,17 @@ thread_block (void)
   schedule ();
 }
 
+list_less_func *priority_sort(const struct list_elem *a, const struct list_elem *b,
+                   void *aux) {
+  struct thread *newThread = list_entry(a, struct thread, elem);
+  struct thread *listThread = list_entry(b, struct thread, elem);
+  if(newThread->priority < listThread->priority)
+    return 0;
+  else
+    return 1;
+
+}
+
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
@@ -239,7 +250,8 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+  //list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t->elem, &priority_sort, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
