@@ -204,6 +204,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
       list_remove(e);
       // snprintf(msg, 100, "wake up %s\n", t->name);
       // puts(msg);
+      
       sema_up(&t->sema_thread);
     }
   }

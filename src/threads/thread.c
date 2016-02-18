@@ -100,6 +100,18 @@ thread_init (void)
   initial_thread->tid = allocate_tid ();
 }
 
+
+list_less_func *priority_check(const struct list_elem *a, const struct list_elem *b,
+                   void *aux) {
+  struct thread *newThread = list_entry(a, struct thread, elem);
+  struct thread *listThread = list_entry(b, struct thread, elem);
+  if(newThread->priority <= listThread->priority)
+    return 0;
+  else
+    return 1;
+}
+
+
 /* Starts preemptive thread scheduling by enabling interrupts.
    Also creates the idle thread. */
 void
@@ -222,16 +234,7 @@ thread_block (void)
   schedule ();
 }
 
-list_less_func *priority_sort(const struct list_elem *a, const struct list_elem *b,
-                   void *aux) {
-  struct thread *newThread = list_entry(a, struct thread, elem);
-  struct thread *listThread = list_entry(b, struct thread, elem);
-  if(newThread->priority < listThread->priority)
-    return 0;
-  else
-    return 1;
 
-}
 
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
@@ -250,8 +253,8 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  //list_push_back (&ready_list, &t->elem);
-  list_insert_ordered(&ready_list, &t->elem, &priority_sort, NULL);
+  // list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t->elem, &priority_check, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -349,7 +352,24 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
+  struct list_elem *e;
+  struct thread* t;
+  
   thread_current ()->priority = new_priority;
+
+  // 1. check for a higher priority
+  // for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
+    if(!list_empty) {
+      e = list_front(&ready_list);
+      t = list_entry(e, struct thread, elem);
+      if(t->priority > new_priority) {
+        // 2. if there is a higher priority, yield this one
+        thread_yield();  // 3. then run the highest priority
+        // break;
+      }
+    }
+  // }
+  // 4. else if there isn't, do nothing
 }
 
 /* Returns the current thread's priority. */
@@ -566,10 +586,11 @@ thread_schedule_tail (struct thread *prev)
 static void
 schedule (void) 
 {
+  list_sort(&ready_list, &priority_check, NULL);
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
-
+  
   ASSERT (intr_get_level () == INTR_OFF);
   ASSERT (cur->status != THREAD_RUNNING);
   ASSERT (is_thread (next));
