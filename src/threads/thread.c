@@ -209,11 +209,15 @@ thread_create (const char *name, int priority,
   /* Stack frame for switch_threads(). */
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
-  sf->ebp = 0;
 
+  if(t->priority > thread_current()->priority) {
+    thread_unblock (t);
+    thread_yield ();
+  }
+  else {
   /* Add to run queue. */
-  thread_unblock (t);
-
+    thread_unblock (t);
+  }
   return tid;
 }
 
@@ -253,7 +257,6 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  // list_push_back (&ready_list, &t->elem);
   list_insert_ordered(&ready_list, &t->elem, &priority_check, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
@@ -357,19 +360,13 @@ thread_set_priority (int new_priority)
   
   thread_current ()->priority = new_priority;
 
-  // 1. check for a higher priority
-  // for (e = list_begin (&ready_list); e != list_end (&ready_list); e = list_next (e)) {
-    if(!list_empty) {
-      e = list_front(&ready_list);
-      t = list_entry(e, struct thread, elem);
-      if(t->priority > new_priority) {
-        // 2. if there is a higher priority, yield this one
-        thread_yield();  // 3. then run the highest priority
-        // break;
-      }
+  if(!list_empty(&ready_list)) {
+    e = list_front(&ready_list);
+    t = list_entry(e, struct thread, elem);
+    if(t->priority > new_priority) {
+      thread_yield();
     }
-  // }
-  // 4. else if there isn't, do nothing
+  }
 }
 
 /* Returns the current thread's priority. */
