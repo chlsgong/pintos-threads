@@ -190,7 +190,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
   int64_t start;
   struct list_elem *e;
   struct thread* t;
-  // char msg[100];
 
   ticks++;
   thread_tick ();
@@ -202,9 +201,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
 
     if(timer_elapsed(start) == sleep_ticks) {
       list_remove(e);
-      // snprintf(msg, 100, "wake up %s\n", t->name);
-      // puts(msg);
-      
       sema_up(&t->sema_thread);
     }
   }
