@@ -95,7 +95,6 @@ timer_sleep (int64_t ticks)
 {
   int64_t start = timer_ticks (); // tick that thread is put to sleep at
   struct thread* curr_thread;
-  // char msg[100];
 
   ASSERT (intr_get_level () == INTR_ON);
   if(ticks <= 0)
@@ -105,9 +104,7 @@ timer_sleep (int64_t ticks)
 
   curr_thread->sleep_ticks = ticks;
   curr_thread->start_tick = start;
-
-  // snprintf(msg, 100, "sleep %s\n", curr_thread->name);
-  // puts(msg);
+  
   list_push_back(&wait_list, &curr_thread->waitelem);
   sema_down(&curr_thread->sema_thread);
 }
@@ -204,12 +201,6 @@ timer_interrupt (struct intr_frame *args UNUSED)
       sema_up(&t->sema_thread);
     }
   }
-
-  // if(timer_elapsed(start) >= sleep_ticks && sema_thread.value == 0) {
-  //   snprintf(msg, 100, "wake up %s\n", curr_thread->name);
-  //   puts(msg);
-  //   sema_up(&sema_thread);
-  // }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
