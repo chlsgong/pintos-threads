@@ -107,9 +107,10 @@ struct thread
     /* Shared by timer.c. */
     int64_t sleep_ticks;                /* Number of ticks the thread should sleep for. */
     int64_t start_tick;                 /* The tick that the thread starts sleeping at. */
-    // int sleepcount;                     /* The numebr of times that this thread has slept. */
     struct semaphore sema_thread;
-  };
+    int prev_priority;
+    int priority_changed;
+ };
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.

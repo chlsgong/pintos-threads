@@ -98,6 +98,7 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+  initial_thread->prev_priority = PRI_DEFAULT;
 }
 
 
@@ -195,7 +196,6 @@ thread_create (const char *name, int priority,
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
-
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
   kf->eip = NULL;
@@ -211,8 +211,8 @@ thread_create (const char *name, int priority,
   sf->eip = switch_entry;
 
   if(t->priority > thread_current()->priority) {
-    thread_unblock (t);
-    thread_yield ();
+    thread_unblock (t); // add to ready queue
+    thread_yield (); // run new thread
   }
   else {
   /* Add to run queue. */
@@ -494,6 +494,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+  t->prev_priority = priority;
+  t->priority_changed = 0;
 
   old_level = intr_disable();
   list_push_back (&all_list, &t->allelem);
