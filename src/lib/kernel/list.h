@@ -100,6 +100,12 @@ struct list
     struct list_elem tail;      /* List tail. */
   };
 
+/* Previous priority list element. */
+/* struct pp_list_elem {
+  int prev_priority;            /* Previous priority data. */
+/*  struct list_elem pp_elem;     /* List element. */
+/*}; */
+
 /* Converts pointer to list element LIST_ELEM into a pointer to
    the structure that LIST_ELEM is embedded inside.  Supply the
    name of the outer structure STRUCT and the member name MEMBER

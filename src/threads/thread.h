@@ -108,9 +108,16 @@ struct thread
     int64_t sleep_ticks;                /* Number of ticks the thread should sleep for. */
     int64_t start_tick;                 /* The tick that the thread starts sleeping at. */
     struct semaphore sema_thread;
-    int prev_priority;
-    int priority_changed;
+    // int prev_priority;
+    struct list prev_priorities;        /* Keeps track of the previous priorities. */
+    int priority_changed;               /* 1 if priority has been changed, 0 otherwise. */
  };
+
+/* Previous priority list element. */
+struct pp_list_elem {
+  int prev_priority;            /* Previous priority data. */
+  struct list_elem pp_elem;     /* List element. */
+};
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
@@ -118,6 +125,7 @@ struct thread
 extern bool thread_mlfqs;
 
 list_less_func *priority_check(const struct list_elem*, const struct list_elem*, void*);
+void pp_elem_init(struct pp_list_elem*);
 
 void thread_init (void);
 void thread_start (void);

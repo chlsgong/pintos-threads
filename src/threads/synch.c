@@ -186,6 +186,19 @@ lock_init (struct lock *lock)
   sema_init (&lock->semaphore, 1);
 }
 
+list_less_func* prev_priority_check(const struct list_elem* a, const struct list_elem* b, 
+				    void* aux)
+{
+  int new_pp = list_entry(a, struct pp_list_elem, pp_elem)->prev_priority; 
+  int list_pp = list_entry(b, struct pp_list_elem, pp_elem)->prev_priority;
+  
+  if(new_pp <= list_pp)
+    return 0;
+  else
+    return 1;
+}
+
+
 /* Acquires LOCK, sleeping until it becomes available if
    necessary.  The lock must not already be held by the current
    thread.
@@ -200,13 +213,18 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
+  
+  struct pp_list_elem pp;
+  pp_elem_init(&pp);
 
   if(lock->holder != NULL) {
-    if(lock->holder->priority < thread_current()) {
-      lock->holder->prev_priority = lock->holder->priority;
+    if(lock->holder->priority < thread_current()->priority) {
+      // lock->holder->prev_priority = lock->holder->priority;
+      pp.prev_priority = lock->holder->priority;
+      // list_insert_ordered(&lock->holder->prev_priorities, &pp.pp_elem, &prev_priority_check, NULL);
+      list_push_back(&lock->holder->prev_priorities, &pp.pp_elem);
       lock->holder->priority = thread_current()->priority;
       lock->holder->priority_changed = 1;
-      thread_yield;
     }
   }
  
@@ -242,12 +260,27 @@ lock_try_acquire (struct lock *lock)
 void
 lock_release (struct lock *lock) 
 {
+  struct list_elem* e;
+  struct pp_list_elem* pp_e;
+  struct thread* donor_t;
+  
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
   if(thread_current()->priority_changed) {
-    thread_current()->priority = thread_current()->prev_priority;
-    thread_current()->priority_changed = 0;
+    for(e = list_begin(&thread_current()->prev_priorities); 
+	e != list_end(&thread_current()->prev_priorities); 
+	e = list_next(e))
+    {
+      pp_e = list_entry(e, struct pp_list_elem, pp_elem);
+      donor_t = list_front(&lock->semaphore.waiters);
+      if(pp_e->prev_priority == donor_t->priority) {
+	list_remove(e);
+      }
+    }
+    // thread_current()->priority = thread_current()->prev_priority;
+    if(list_empty(&thread_current()->prev_priorities))
+      thread_current()->priority_changed = 0;
   }
   lock->holder = NULL;
   sema_up (&lock->semaphore);

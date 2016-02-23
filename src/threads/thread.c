@@ -98,9 +98,13 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-  initial_thread->prev_priority = PRI_DEFAULT;
 }
 
+void pp_elem_init(struct pp_list_elem* pp) {
+  pp->prev_priority = PRI_DEFAULT;
+  pp->pp_elem.prev = NULL;
+  pp->pp_elem.next = NULL;
+}
 
 list_less_func *priority_check(const struct list_elem *a, const struct list_elem *b,
                    void *aux) {
@@ -111,7 +115,6 @@ list_less_func *priority_check(const struct list_elem *a, const struct list_elem
   else
     return 1;
 }
-
 
 /* Starts preemptive thread scheduling by enabling interrupts.
    Also creates the idle thread. */
@@ -494,7 +497,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-  t->prev_priority = priority;
+  //  t->prev_priority = priority;
+  list_init(&t->prev_priorities);
   t->priority_changed = 0;
 
   old_level = intr_disable();

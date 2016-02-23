@@ -67,6 +67,12 @@ list_init (struct list *list)
   list->tail.next = NULL;
 }
 
+/* void pp_elem_init(struct pp_list_elem* pp) {
+  pp->prev_priority = PRI_DEFAULT;
+  pp->pp_elem.prev = NULL;
+  pp->pp_elem.next = NULL;
+} */
+
 /* Returns the beginning of LIST.  */
 struct list_elem *
 list_begin (struct list *list)
