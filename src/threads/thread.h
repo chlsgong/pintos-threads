@@ -108,7 +108,6 @@ struct thread
     int64_t sleep_ticks;                /* Number of ticks the thread should sleep for. */
     int64_t start_tick;                 /* The tick that the thread starts sleeping at. */
     struct semaphore sema_thread;
-    // int prev_priority;
     int priority_changed;
     int prev_priorities[8];
     int index;
@@ -126,6 +125,8 @@ list_less_func *priority_check(const struct list_elem*, const struct list_elem*,
 
 void thread_init (void);
 void thread_start (void);
+
+void sort_ready_list(void);
 
 void thread_tick (void);
 void thread_print_stats (void);

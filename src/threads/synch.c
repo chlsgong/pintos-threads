@@ -120,6 +120,7 @@ sema_up (struct semaphore *sema)
   if(!list_empty(&sema->waiters)) {
     t = list_entry(list_pop_front (&sema->waiters), struct thread, elem);
     thread_unblock(t);
+    // sort_ready_list();
     if(t->priority > thread_current()->priority && !intr_context()) {
       thread_yield();
     }
@@ -272,19 +273,24 @@ lock_release (struct lock *lock)
     receiver_t = thread_current()->receiver;
 
     if(thread_current()->priority_changed && receiver_t != NULL) {
-      remove_prev_priority(lock, receiver_t);
       remove_prev_priority(lock, thread_current());
-      if(receiver_t->index == 0) {
+      if(receiver_t->index == 0)
         thread_current()->receiver = NULL; // remove the receving thread info
+      else {
+        remove_prev_priority(lock, receiver_t);
+        if(receiver_t->index == 0)
+          thread_current()->receiver = NULL; // remove the receving thread info
       }
     }
-    else if(thread_current()->priority_changed) { // only if priority changed
+    else if(thread_current()->priority_changed) // only if priority changed
       remove_prev_priority(lock, thread_current());
-    }
     else if(receiver_t != NULL) {
-      remove_prev_priority(lock, receiver_t);
-      if(receiver_t->index == 0) {
+      if(receiver_t->index == 0)
         thread_current()->receiver = NULL; // remove the receving thread info
+      else {
+        remove_prev_priority(lock, receiver_t);
+        if(receiver_t->index == 0)
+          thread_current()->receiver = NULL; // remove the receving thread info
       }
     }
   }

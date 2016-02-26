@@ -407,9 +407,6 @@ inplace_merge (struct list_elem *a0, struct list_elem *a1b0,
 void
 list_sort (struct list *list, list_less_func *less, void *aux)
 {
-  // char msg[100];
-  // snprintf(msg, 100, "list_sort\n");
-  // puts(msg);
   size_t output_run_cnt;        /* Number of runs output in current pass. */
 
   ASSERT (list != NULL);

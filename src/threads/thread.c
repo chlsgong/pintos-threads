@@ -111,6 +111,10 @@ list_less_func *priority_check(const struct list_elem *a, const struct list_elem
     return 1;
 }
 
+void sort_ready_list() {
+  ASSERT(!list_empty(&ready_list));
+  list_sort(&ready_list, &priority_check, NULL);
+}
 
 /* Starts preemptive thread scheduling by enabling interrupts.
    Also creates the idle thread. */
@@ -184,6 +188,8 @@ thread_create (const char *name, int priority,
   struct switch_threads_frame *sf;
   tid_t tid;
 
+  struct semaphore sema;
+
   ASSERT (function != NULL);
 
   /* Allocate thread. */
@@ -256,6 +262,8 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
+  if(!list_empty(&ready_list))
+    sort_ready_list();
   list_insert_ordered(&ready_list, &t->elem, &priority_check, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
