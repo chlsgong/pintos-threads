@@ -496,6 +496,7 @@ init_thread (struct thread *t, const char *name, int priority)
   // t->prev_priority = priority;
   t->priority_changed = 0;
   t->index = 0;
+  t->receiver = NULL;
 
   old_level = intr_disable();
   list_push_back (&all_list, &t->allelem);

@@ -112,6 +112,7 @@ struct thread
     int priority_changed;
     int prev_priorities[8];
     int index;
+    struct thread* receiver;
  };
 
 /* If false (default), use round-robin scheduler.
