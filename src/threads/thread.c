@@ -214,15 +214,13 @@ thread_create (const char *name, int priority,
   /* Stack frame for switch_threads(). */
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
-
-  if(t->priority > thread_current()->priority) {
-    thread_unblock (t); // add to ready queue
-    thread_yield (); // run new thread
-  }
-  else {
+  
   /* Add to run queue. */
-    thread_unblock (t);
-  }
+  thread_unblock (t);
+
+  if(t->priority > thread_current()->priority)
+    thread_yield (); // run new thread
+
   return tid;
 }
 

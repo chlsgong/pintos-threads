@@ -40,7 +40,6 @@ timer_init (void)
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
   list_init(&wait_list);
-  // sema_init(&sema_thread, 0);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -102,11 +101,11 @@ timer_sleep (int64_t ticks)
   curr_thread = thread_current();
   sema_init(&curr_thread->sema_thread, 0); // initialize semaphore
 
-  curr_thread->sleep_ticks = ticks;
-  curr_thread->start_tick = start;
+  curr_thread->sleep_ticks = ticks; // save ticks to thread struct
+  curr_thread->start_tick = start; // save start tick to thread struct
   
-  list_push_back(&wait_list, &curr_thread->waitelem);
-  sema_down(&curr_thread->sema_thread);
+  list_push_back(&wait_list, &curr_thread->waitelem); // add to our own waitlist
+  sema_down(&curr_thread->sema_thread); // put thread to sleep
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
