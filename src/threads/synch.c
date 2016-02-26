@@ -110,6 +110,8 @@ sema_up (struct semaphore *sema)
 {
   enum intr_level old_level;
   struct thread* t;
+  struct thread* tmp;
+  struct list_elem* e;
 
   ASSERT (sema != NULL);
 
@@ -201,22 +203,33 @@ lock_acquire (struct lock *lock)
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
 
-  struct thread* lock_holder = lock->holder; 
+  struct thread* nested_t;
 
   if(lock->holder != NULL) {
     if(lock->holder->priority < thread_get_priority()) {
-      // lock->holder->prev_priority = lock->holder->priority;
-      lock_holder->prev_priorities[lock_holder->index] = lock_holder->priority; // save old priority
-      lock_holder->index++;
-      lock_holder->priority = thread_get_priority();
-      lock_holder->priority_changed = 1;
-      thread_current()->receiver = lock_holder; // save receiving thread info
+      // donation
+      priority_donate(lock->holder); // new donation
+      thread_current()->receiver = lock->holder; // save receiving thread info
+      nested_t = thread_current()->receiver;
+      while(nested_t != NULL) {
+        nested_t = nested_t->receiver;
+        if(nested_t != NULL)
+          priority_donate(nested_t);
+      }
     }
   }
  
   sema_down (&lock->semaphore);
-  thread_current()->receiver == NULL; // remove the receving thread info
+  // if(thread_current()->receiver != NULL && thread_current()->receiver->index == 0)
+  //   thread_current()->receiver == NULL; // remove the receving thread info
   lock->holder = thread_current ();
+}
+
+void priority_donate(struct thread* lock_holder) {
+  lock_holder->prev_priorities[lock_holder->index] = lock_holder->priority; // save old priority
+  lock_holder->index++;
+  lock_holder->priority = thread_get_priority();
+  lock_holder->priority_changed = 1;
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -252,18 +265,27 @@ lock_release (struct lock *lock)
 
   struct thread* receiver_t;
 
+  if(thread_current()->pflag)
+    thread_set_priority(thread_current()->new_priority);
+
   if(!list_empty(&lock->semaphore.waiters)) {
     receiver_t = thread_current()->receiver;
 
     if(thread_current()->priority_changed && receiver_t != NULL) {
       remove_prev_priority(lock, receiver_t);
       remove_prev_priority(lock, thread_current());
+      if(receiver_t->index == 0) {
+        thread_current()->receiver = NULL; // remove the receving thread info
+      }
     }
-    else if(thread_current()->priority_changed) {
+    else if(thread_current()->priority_changed) { // only if priority changed
       remove_prev_priority(lock, thread_current());
     }
     else if(receiver_t != NULL) {
       remove_prev_priority(lock, receiver_t);
+      if(receiver_t->index == 0) {
+        thread_current()->receiver = NULL; // remove the receving thread info
+      }
     }
   }
 

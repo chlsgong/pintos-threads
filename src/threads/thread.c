@@ -356,8 +356,13 @@ thread_set_priority (int new_priority)
 {
   struct list_elem *e;
   struct thread* t;
-  
-  thread_current ()->priority = new_priority;
+
+  if(thread_current()->pflag || thread_current()->index == 0)  
+    thread_current()->priority = new_priority;
+  else {
+    thread_current()->pflag = 1;
+    thread_current()->new_priority = new_priority;
+  }
 
   if(!list_empty(&ready_list)) {
     e = list_front(&ready_list);
@@ -497,6 +502,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority_changed = 0;
   t->index = 0;
   t->receiver = NULL;
+  t->pflag = 0;
+  t->new_priority = priority;
 
   old_level = intr_disable();
   list_push_back (&all_list, &t->allelem);
