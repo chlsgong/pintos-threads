@@ -201,12 +201,15 @@ lock_acquire (struct lock *lock)
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
 
+  struct thread* lock_holder = lock->holder; 
+
   if(lock->holder != NULL) {
-    if(lock->holder->priority < thread_current()) {
-      lock->holder->prev_priority = lock->holder->priority;
-      lock->holder->priority = thread_current()->priority;
+    if(lock->holder->priority < thread_get_priority()) {
+      // lock->holder->prev_priority = lock->holder->priority;
+      lock_holder->prev_priorities[lock_holder->index] = lock_holder->priority; // save old priority
+      lock_holder->index++;
+      lock_holder->priority = thread_get_priority();
       lock->holder->priority_changed = 1;
-      thread_yield;
     }
   }
  
@@ -245,12 +248,42 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
-  if(thread_current()->priority_changed) {
-    thread_current()->priority = thread_current()->prev_priority;
-    thread_current()->priority_changed = 0;
+  if(thread_current()->priority_changed && !list_empty(&lock->semaphore.waiters)) {
+    remove_prev_priority(lock);
   }
+
   lock->holder = NULL;
   sema_up (&lock->semaphore);
+}
+
+void remove_prev_priority(struct lock* lock) {
+  struct thread* donor_t;
+  int next_highest;
+  int i;
+
+  donor_t = list_entry(list_front(&lock->semaphore.waiters), struct thread, elem);
+  next_highest = thread_current()->prev_priorities[thread_current()->index-1];
+  // make sure index is valid
+  while(next_highest < 0) {
+    thread_current()->index--;
+    next_highest = thread_current()->prev_priorities[thread_current()->index-1];
+  }
+  // if lock priority = waiters priority, get next highest prev priority
+  if(thread_get_priority() == donor_t->priority) {
+    thread_current()->priority = next_highest; // set old thread priority
+    thread_current()->prev_priorities[thread_current()->index-1] = -1; // remove from array
+    thread_current()->index--;
+  }
+  else { // if lock priority > waiting thread priority, search through array remove that priority and put in ready list
+    for(i=0; i<thread_current()->index; i++) {
+      if(thread_current()->prev_priorities[i] == donor_t->priority) {
+        thread_current()->prev_priorities[i] = -1;
+      }
+    }
+  }
+  // thread_current()->priority = thread_current()->prev_priority;
+  if(thread_current()->index == 0)
+    thread_current()->priority_changed = 0;
 }
 
 /* Returns true if the current thread holds LOCK, false

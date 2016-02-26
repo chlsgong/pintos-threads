@@ -108,8 +108,10 @@ struct thread
     int64_t sleep_ticks;                /* Number of ticks the thread should sleep for. */
     int64_t start_tick;                 /* The tick that the thread starts sleeping at. */
     struct semaphore sema_thread;
-    int prev_priority;
+    // int prev_priority;
     int priority_changed;
+    int prev_priorities[8];
+    int index;
  };
 
 /* If false (default), use round-robin scheduler.

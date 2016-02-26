@@ -98,7 +98,6 @@ thread_init (void)
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
-  initial_thread->prev_priority = PRI_DEFAULT;
 }
 
 
@@ -108,7 +107,7 @@ list_less_func *priority_check(const struct list_elem *a, const struct list_elem
   struct thread *listThread = list_entry(b, struct thread, elem);
   if(newThread->priority <= listThread->priority)
     return 0;
-  else
+  else 
     return 1;
 }
 
@@ -494,8 +493,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-  t->prev_priority = priority;
+  // t->prev_priority = priority;
   t->priority_changed = 0;
+  t->index = 0;
 
   old_level = intr_disable();
   list_push_back (&all_list, &t->allelem);
