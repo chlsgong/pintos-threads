@@ -1,0 +1,102 @@
+2/15 3:00pm-5:30pm Charles, Rebecca, and Jasmine, 2 1/2 hours
+Driver Order and Time Length:
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+
+2/16 3:00pm-6:00pm Charles, Rebecca, and Jasmine, 3 hours
+Driver Order and Time Length:
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+
+2/17 2:00pm-6:00pm Charles, Rebecca, and Jasmine, 4 hours
+Driver Order and Time Length:
+Rebecca, 30 minutes
+Charles, 30 minutes
+Jasmine, 30 minutes
+Rebecca, 30 minutes
+Charles, 30 minutes
+Jasmine, 30 minutes
+Rebecca, 30 minutes
+Charles, 30 minutes
+
+2/18 2:00pm-5:30pm Charles, Rebecca, and Jasmine, 3 1/2 hours
+Driver Order and Time Length:
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+
+2/19 2:30pm-7:00pm Charles, Rebecca, and Jasmine, 4 1/2 hours
+Driver Order and Time Length:
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+
+2/22 2:00pm-5:30pm Charles, Rebecca, and Jasmine, 3 1/2 hours
+Driver Order and Time Length:
+Rebecca, 30 minutes
+Charles, 30 minutes
+Jasmine, 30 minutes
+Rebecca, 30 minutes
+Charles, 30 minutes
+Jasmine, 30 minutes
+Rebecca, 30 minutes
+
+2/24 9:30pm-11:00pm Charles, Rebecca, and Jasmine, 1 1/2 hours
+Driver Order and Time Length:
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+
+2/25 4:00pm-4:00am Charles, Rebecca, and Jasmine, 12 hours
+Driver Order and Time Length:
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+Jasmine, 30 minutes
+Charles, 30 minutes
+Rebecca, 30 minutes
+
+2/26 4:00pm-7:00pm Charles, Rebecca, and Jasmine, 3 hours
+Driver Order and Time Length:
+Rebecca, 30 minutes
+Charles, 30 minutes
+Jasmine, 30 minutes
+Rebecca, 30 minutes
+Charles, 30 minutes
+Jasmine, 30 minutes
+
