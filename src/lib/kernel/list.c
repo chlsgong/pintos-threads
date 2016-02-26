@@ -1,4 +1,5 @@
 #include "list.h"
+#include "threads/thread.h"
 #include "../debug.h"
 
 /* Our doubly linked lists have two header elements: the "head"
@@ -259,7 +260,9 @@ list_remove (struct list_elem *elem)
 struct list_elem *
 list_pop_front (struct list *list)
 {
-  struct list_elem *front = list_front (list);
+  struct list_elem *front;
+  list_sort(list, &priority_check, NULL);
+  front = list_front (list);
   list_remove (front);
   return front;
 }
